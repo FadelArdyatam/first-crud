@@ -1,13 +1,20 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PrismaModule } from './prisma/prisma.module';
+import { CommonModule } from './common/common.module';
 import { UserModule } from './user/user.module';
-import { PrismaService } from './prisma/prisma.service';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
 
 @Module({
-  imports: [PrismaModule, UserModule],
-  controllers: [AppController],
-  providers: [AppService, PrismaService],
+  imports: [
+    WinstonModule.forRoot({
+      format: winston.format.json(),
+      transports: [new winston.transports.Console()],
+    }),
+    CommonModule,
+    UserModule,
+  ],
+  controllers: [],
+  providers: [AppService],
 })
 export class AppModule {}

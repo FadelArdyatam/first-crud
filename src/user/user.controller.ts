@@ -1,53 +1,23 @@
-import { Body, Controller, Get, Post, Param, Patch, UsePipes, ValidationPipe, ParseIntPipe, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { WebResponse } from '../model/web.model';
+import { RegisterUserRequest, UserResponse } from '../model/user.model';
 
-@Controller('user')
+@Controller('/api/users')
 export class UserController {
-    constructor(private UserService: UserService) {}
+  constructor(private userService: UserService) {}
 
-    /**
-     * Get All User
-     * @returns
-     */
+  @Post()
+  @HttpCode(200)
+  async register(
+    @Body() request: RegisterUserRequest,
+  ): Promise<WebResponse<UserResponse>> {
 
-    @Get()
-    async users () {
-        return await this.UserService.findAll();
+    const result = await this.userService.register(request);
+
+    return {
+        data: result
     }
-
-    /**
-     * Create User Baru
-     * @param body
-     * @returns
-     */
-
-    @HttpCode(HttpStatus.OK)
-    @UsePipes(ValidationPipe)
-    @Post()
-    async createUser (@Body() body : CreateUserDto) {
-        return await this.UserService.createData(body);
     }
+  }
 
-    /**
-     * Update User
-     * @param id
-     * @param body
-     * @returns
-     */
-    @UsePipes(ValidationPipe) // harus di parsing karena dari int ke string bisa error
-    @Patch('/:id')
-    async updateUser(@Param('id', ParseIntPipe) id, @Body() body ) {
-        return await this.UserService.updateData(id, body);
-    }
-
-    /**
-     *
-     * @param id
-     * @returns
-     */
-    @Delete('/:id')
-    async deleteUser(@Param('id', ParseIntPipe) id) {
-        return await this.UserService.deleteData(id);
-    }
-}
