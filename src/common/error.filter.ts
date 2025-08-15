@@ -13,12 +13,26 @@ export class ErrorFilter implements ExceptionFilter {
     const response = host.switchToHttp().getResponse();
 
     if (exception instanceof HttpException) {
-      response.status(exception.getStatus()).json({
-        errors: exception.getResponse(),
+      const status = exception.getStatus();
+      const errorResponse = exception.getResponse();
+      let errorMessage: string;
+
+      if (typeof errorResponse === 'string') {
+        errorMessage = errorResponse;
+      } else if (typeof errorResponse === 'object' && errorResponse['message']) {
+        errorMessage = Array.isArray(errorResponse['message'])
+          ? errorResponse['message'].join(', ')
+          : errorResponse['message'];
+      } else {
+        errorMessage = 'An unexpected error occurred';
+      }
+
+      response.status(status).json({
+        errors: errorMessage,
       });
     } else if (exception instanceof ZodError) {
       response.status(400).json({
-        errors: 'Validation Error',
+        errors: exception.issues.map((issue) => issue.message).join(', '),
       });
     } else {
       response.status(500).json({

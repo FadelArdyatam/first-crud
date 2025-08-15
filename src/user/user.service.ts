@@ -15,6 +15,7 @@ export class UserService {
         private prismaService : PrismaService
     ) {}
 
+
     async register(request: RegisterUserRequest): Promise<UserResponse>{
         this.logger.info(`Register new user ${JSON.stringify(request)}`);
         const registerRequest : RegisterUserRequest =
