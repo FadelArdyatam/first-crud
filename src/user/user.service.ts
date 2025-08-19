@@ -3,7 +3,6 @@ import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from '../common/prisma.service';
 import { ValidationService } from '../common/validation.service';
-import { JwtService } from '../common/jwt.service';
 import {
   RegisterUserRequest,
   UpdateUserRequest,
@@ -13,6 +12,7 @@ import {
 import { Logger } from 'winston';
 import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt';
+import { v4 as uuid } from 'uuid';
 import { User } from '@prisma/client';
 
 @Injectable()
@@ -21,7 +21,6 @@ export class UserService {
     private validationService: ValidationService,
     @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     private prismaService: PrismaService,
-    private jwtService: JwtService,
   ) {}
 
   // Register method to create a new user
@@ -92,13 +91,23 @@ export class UserService {
       throw new HttpException(`Password tidak valid`, 401);
     }
 
-    // Generate JWT token
-    const token = this.jwtService.generateToken(user);
+    user = await this.prismaService.user.update({
+      where: {
+        username: loginRequest.username,
+      },
+      data: {
+        token: uuid(),
+      },
+    });
+
+    if (!user.token) {
+      throw new HttpException('Token not found', 401);
+    }
 
     return {
       username: user.username,
       name: user.name,
-      token: token,
+      token: user.token,
     };
   }
 
@@ -139,14 +148,5 @@ export class UserService {
       username: result.username,
       name: result.name,
     };
-  }
-
-  async logout(user:User): Promise <UserResponse>{
-    // With JWT, we don't need to store token in database
-    // Token will be invalidated by client or expire naturally
-    return {
-      username: user.username,
-      name: user.name
-    }
   }
 }

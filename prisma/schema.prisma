@@ -17,6 +17,7 @@ model User {
   username String    @id
   password String
   name     String
+  token    String?
 
   Contact  Contact[]
 
