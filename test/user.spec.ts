@@ -77,7 +77,7 @@ describe('UserController', () => {
     });
   });
 
-    describe('POST /api/users/login', () => {
+  describe('POST /api/users/login', () => {
     beforeEach(async () => {
       await testService.deleteUser();
       await testService.createUser();
@@ -113,6 +113,7 @@ describe('UserController', () => {
       expect(response.body.data.token).toBeDefined(); // data token harus ada
     });
   });
+
   describe('GET /api/users/current', () => {
     beforeEach(async () => {
       await testService.deleteUser();
@@ -131,9 +132,19 @@ describe('UserController', () => {
     });
 
     it('should be able to get user', async () => {
+      // First login to get valid JWT token
+      const loginResponse = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: 'test',
+          password: 'password',
+        });
+
+      const token = loginResponse.body.data.token;
+
       const response = await request(app.getHttpServer())
         .get('/api/users/current')
-        .set('Authorization', 'test');
+        .set('Authorization', `Bearer ${token}`);
 
       logger.info(response.body);
 
@@ -142,43 +153,139 @@ describe('UserController', () => {
       expect(response.body.data.name).toBe('test');
     });
   });
-  
-  // describe('PATCH /api/users/current', () => {
-  //   beforeEach(async () => {
-  //     await testService.deleteUser();
-  //     await testService.createUser();
-  //   });
 
-  //   it('should be rejected if request is invalid', async () => {
-  //     const response = await request(app.getHttpServer())
-  //       .patch('/api/users/current')
-  //       .set('Authorization', 'test')
-  //       .send({
-  //         password: '',
-  //         name: '',
-  //       });
+  describe('PATCH /api/users/current', () => {
+    beforeEach(async () => {
+      await testService.deleteUser();
+      await testService.createUser();
+    });
 
-  //     logger.info(response.body);
+    it('should be rejected if request is invalid', async () => {
+      // First login to get valid JWT token
+      const loginResponse = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: 'test',
+          password: 'test',
+        });
 
-  //     expect(response.status).toBe(400);
-  //     expect(response.body.errors).toBeDefined();
-  //   });
+      const token = loginResponse.body.data.token;
 
-  //   it('should be able to update name', async () => {
-  //     const response = await request(app.getHttpServer())
-  //       .patch('/api/users/current')
-  //       .set('Authorization', 'test')
-  //       .send({
-  //         password: 'test',
-  //         name: 'test updated',
-  //       });
+      const response = await request(app.getHttpServer())
+        .patch('/api/users/current')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          password: '',
+          name: '',
+        });
 
-  //     logger.info(response.body);
+      logger.info(response.body);
 
-  //     expect(response.status).toBe(201);
-  //     expect(response.body.data.username).toBe('test');
-  //     expect(response.body.data.name).toBe('test updated');
-  //   });
-  // });
+      expect(response.status).toBe(400);
+      expect(response.body.errors).toBeDefined();
+    });
 
+    it('should be able to update name', async () => {
+      // First login to get valid JWT token
+      const loginResponse = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: 'test',
+          password: 'test',
+        });
+
+      const token = loginResponse.body.data.token;
+
+      const response = await request(app.getHttpServer())
+        .patch('/api/users/current')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          name: 'test updated',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.username).toBe('test');
+      expect(response.body.data.name).toBe('test updated');
+    });
+
+    //ganti passowrd
+    it('should be able to update password', async () => {
+      // First login to get valid JWT token
+      const loginResponse = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: 'test',
+          password: 'test',
+        });
+
+      const token = loginResponse.body.data.token;
+
+      let response = await request(app.getHttpServer())
+        .patch('/api/users/current')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          password: 'updated',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.username).toBe('test');
+      expect(response.body.data.name).toBe('test');
+
+      // kita coba login dengan password baru
+      response = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: 'test',
+          password: 'updated',
+        });
+
+      logger.debug(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.token).toBeDefined();
+    });
+  });
+
+  describe('DELETE /api/users/current', () => {
+    beforeEach(async () => {
+      await testService.deleteUser();
+      await testService.createUser();
+    });
+
+    it('should be rejected if token is invalid', async () => {
+      const response = await request(app.getHttpServer())
+        .delete('/api/users/current')
+        .set('Authorization', 'wrong');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be able to logout user', async () => {
+      // First login to get valid JWT token
+      const loginResponse = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: 'test',
+          password: 'test',
+        });
+
+      const token = loginResponse.body.data.token;
+
+      const response = await request(app.getHttpServer())
+        .delete('/api/users/current')
+        .set('Authorization', `Bearer ${token}`);
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBe(true);
+    });
+  });
 });

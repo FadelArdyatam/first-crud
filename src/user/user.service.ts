@@ -12,7 +12,7 @@ import {
 import { Logger } from 'winston';
 import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt';
-import { v4 as uuid } from 'uuid';
+import { JwtService } from '../common/jwt.service';
 import { User } from '@prisma/client';
 
 @Injectable()
@@ -21,6 +21,7 @@ export class UserService {
     private validationService: ValidationService,
     @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     private prismaService: PrismaService,
+    private jwtService : JwtService,
   ) {}
 
   // Register method to create a new user
@@ -91,23 +92,12 @@ export class UserService {
       throw new HttpException(`Password tidak valid`, 401);
     }
 
-    user = await this.prismaService.user.update({
-      where: {
-        username: loginRequest.username,
-      },
-      data: {
-        token: uuid(),
-      },
-    });
-
-    if (!user.token) {
-      throw new HttpException('Token not found', 401);
-    }
+    const token = this.jwtService.generateToken(user);
 
     return {
       username: user.username,
       name: user.name,
-      token: user.token,
+      token: token,
     };
   }
 
