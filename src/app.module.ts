@@ -3,6 +3,8 @@ import { AppService } from './app.service';
 import { CommonModule } from './common/common.module';
 import { UserModule } from './user/user.module';
 import { WinstonModule } from 'nest-winston';
+import { ContactController } from './contact/contact.controller';
+import { ContactModule } from './contact/contact.module';
 import * as winston from 'winston';
 
 @Module({
@@ -13,8 +15,9 @@ import * as winston from 'winston';
     }),
     CommonModule,
     UserModule,
+    ContactModule,
   ],
-  controllers: [],
+  controllers: [ContactController],
   providers: [AppService],
 })
 export class AppModule {}

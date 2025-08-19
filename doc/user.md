@@ -53,7 +53,7 @@ Response Body (Success) :
   "data" : {
     "username" : "Fadel",
     "name" : " Fadel",
-    "token" : "session_id_generated"
+    "token" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
@@ -71,7 +71,7 @@ Response Body (Failed) :
 Endpoint : GET /api/users/current
 
 Headers :
-- Authorization: token
+- Authorization: Bearer <jwt_token>
 
 Response Body (Success) :
 
@@ -97,7 +97,7 @@ Response Body (Failed) :
 Endpoint : PATCH /api/users/current
 
 Headers :
-- Authorization: token
+- Authorization: Bearer <jwt_token>
 
 Request Body :
 
@@ -124,7 +124,7 @@ Response Body (Success) :
 Endpoint : DELETE /api/users/current
 
 Headers :
-- Authorization: token
+- Authorization: Bearer <jwt_token>
 
 Response Body (Success) :
 

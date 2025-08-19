@@ -5,7 +5,7 @@
 Endpoint : POST /api/contacts
 
 Headers :
-- Authorization: token
+- Authorization: Bearer <jwt_token>
 
 Request Body :
 
@@ -37,7 +37,7 @@ Response Body :
 Endpoint : GET /api/contacts/:contactId
 
 Headers :
-- Authorization: token
+- Authorization: Bearer <jwt_token>
 
 Response Body :
 
@@ -58,7 +58,7 @@ Response Body :
 Endpoint : PUT /api/contacts/:contactId
 
 Headers :
-- Authorization: token
+- Authorization: Bearer <jwt_token>
 
 Request Body :
 
@@ -90,7 +90,7 @@ Response Body :
 Endpoint : DELETE /api/contacts/:contactId
 
 Headers :
-- Authorization: token
+- Authorization: Bearer <jwt_token>
 
 Response Body :
 
@@ -105,7 +105,7 @@ Response Body :
 Endpoint : GET /api/contacts
 
 Headers :
-- Authorization: token
+- Authorization: Bearer <jwt_token>
 
 Query Params :
 - name: string, contact first name or contact last name, optional
